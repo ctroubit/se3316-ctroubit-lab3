@@ -4,18 +4,34 @@
 <title>Page Title</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="style.css">
-<style>
-</style>
+<link href="https://fonts.cdnfonts.com/css/8bit-wonder" rel="stylesheet">
 <script src="script.js"></script>
 <body>
+<div id = "colouredBlock">
+    <div class = "container">
+        <label for="superheroId">Enter Superhero ID:</label>
+        <input type="text" id="superheroId" oninput="fetchSuperheroInfo()" class = "textBox">
+        <label for="powersId">Enter Power:</label>
+        <input type = 'text' id="powersId" oninput="fetchSuperheroPower()" class = "textBox">
 
+        <select name="Publishers" id="publisherBox" ></select>
+
+        <button id = 'createButton' onclick="createList();getPublisher()" >Create List</button>
+
+        <div id="whiteBox"></div>
+    </div>
+</div>
 <div class="">
-    <label for="superheroId">Enter Superhero ID:</label>
-    <input type="text" id="superheroId" oninput="fetchSuperheroInfo()">
-    <label for="powersId">Enter Power:</label>
-    <input type = 'text' id="powersId" oninput="fetchSuperheroPower()">
+    <div class = 'centered-content' id = 'startContainer'>
+        <h1 id = 'labHeader'>Lab 3</h1>
+        <p id = 'startP'>Create a list to get started!</p>
+    </div>
+
+
+
     <div id="output"></div>
     <div id="powerOutput"></div>
+
 </div>
 
 </body>
