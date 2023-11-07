@@ -1,8 +1,9 @@
 
 label{
-    color: black   ;
-    margin-top: 20px;
+    color: #EDF5E1;
+    margin-top: 10px;
 }
+
 
 .container {
     display: flex;
@@ -19,68 +20,88 @@ label{
 .textBox {
     display: inline-block;
     width: 150px;
-
     margin-top: 10px;
 }
 
 h1 {
-
     display: flex;
     justify-content: center;
-    position: relative;
     align-items: center;
-    flex-direction: column;
+    margin-bottom: -20px;
+    padding: 0;
     text-align: center;
-    margin: 0;
-
-
+    position: relative;
 }
 
 body{
     font-family: '8BIT WONDER', sans-serif;
-    background-color: #F4E7FB;
-    COLOR: black;
+    background-color: #5CD895;
+    COLOR: #EDF5E1;
     margin: 0;
     padding: 0;
-
 }
 
 #colouredBlock{
     height: 100vh;
     width: 175px;
-    background-color: #F3DCDC;
-    position: relative;
+    background-color: #0c0032;
+    position: absolute;
     left: 0;
-
 }
 
 .centered-content {
     position: absolute;
-    top: 30%;
+    top: 24%;
     left: 50%;
     transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
     text-align: center;
 }
 
-#createButton{
+#createButton {
     font-family: '8BIT WONDER', sans-serif;
     font-size: 11px;
     margin-top: 15px;
-}
-#whiteBox{
-    width: 150px;
-    height: 55vh;
-    background-color: white;
-    margin-top: 30px;
-
+    right: 0;
 
 }
 
-#publisherBox{
+.selectionBox{
     margin-top: 10px;
-    width: 100px;
+    width: 125px;
     text-align: center;
     align-content: center;
 }
+
+#headerDiv{
+    background-color: #0c0032;
+    height: 50px;
+}
+
+#startP{
+    margin-top: 250px;
+}
+
+#publisherLabel{
+    margin-top: 25px;
+}
+
+#otherSelection{
+    width:125px;
+}
+
+#listContainer{
+
+    margin-top: 15px;
+    width: 160px;
+    height: 45vh;
+    background-color: white;
+}
+
+
+
 
 

@@ -7,8 +7,11 @@ const path = require('path');
 app.use(cors())
 app.use(express.static(path.join(__dirname, 'client')));
 app.use(express.json())
+
 let s_info_data;
 let s_powers_data;
+
+let lists = []
 fs.readFile('superheroes/superhero_info.json','utf8',(err,data)=>{
     if(err){
         console.error('Error:',err)
@@ -95,6 +98,21 @@ app.get('/api/superheroes/:id/powers', (req, res) => {
 
     res.json(superheroPowers);
 });
+
+app.put('/api/lists/:listName',(req,res)=>{
+    const list = lists.find(l => l.listName === req.params.listName)
+
+})
+app.post('/api/lists',(req,res)=>{
+const {listName, superheroes} = req.body
+
+    const list = {
+    listName,superheroes
+    }
+
+    lists.push(list)
+    res.send(list)
+})
 
 const port = process.env.ACSvcPort || 3000
 app.listen(port,()=>console.log(`Listening on port ${port}...`))

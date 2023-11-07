@@ -1,47 +1,62 @@
 function fetchSuperheroInfo() {
-    const text = document.getElementById('superheroId').value
-    const output = document.getElementById('output')
 
-    if (text === ``) {
-        output.textContent = ''
+    const text = document.getElementById('superheroId').value;
+    const output = document.getElementById('listBox');
+
+    output.innerHTML = ''
+    if (text === '') {
+        output.textContent = '';
         return;
     }
 
-    fetch(`http://localhost:17532/api/superheroes/id/${text}`).then(response => {
+    fetch(`http://localhost:17532/api/superheroes/name/${text}`).then(response => {
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
+            let container = document.getElementById('startContainer');
+            let paragraph = document.getElementById('startP');
+            paragraph.style.display = 'block'
+            paragraph.textContent = 'No Results Found!'
+            paragraph.style.color = 'black'
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-        return response.json()
+        return response.json();
     })
-        .then(superhero => {
-            let div = document.createElement('div');
-            div.style.border = '2px solid white';
-            div.style.background = '#d3d3d3';
-            div.style.alignContent = 'center';
-            div.style.marginBottom = '10px';
-            div.style.marginTop = '100px';
-            div.style.display = 'flex';
-            div.style.justifyContent = 'center';
-            div.setAttribute('id', 'superheroDiv');
-            div.style.color = '#4B4B4B';
+        .then(superheroes => {
+            let paragraph = document.getElementById('startP');
+            paragraph.style.display = 'none'
+            for (const superhero of superheroes) {
+                let div = document.createElement('div');
+                div.style.background = '#3500D3';
+                div.style.width = '500px'
+                div.style.alignContent = 'center';
+                div.style.marginBottom = '10px';
+                div.style.display = 'flex';
+                div.style.justifyContent = 'center';
+                div.setAttribute('class', 'superheroDiv');
+                div.style.color = 'WHITE';
 
-            let ul = document.createElement('ul');
-            ul.style.listStyleType = 'none';
-            ul.style.padding = '0';
+                let ul = document.createElement('ul');
+                ul.style.listStyleType = 'none';
+                ul.style.padding = '0';
+                ul.style.display = 'flex';
+                ul.style.flexWrap = 'wrap';
 
-            for (const [key, value] of Object.entries(superhero)) {
-                let li = document.createElement('li');
-                li.textContent = `${key}: ${value}`;
-                ul.appendChild(li);
+                for (const [key, value] of Object.entries(superhero)) {
+                    let li = document.createElement('li');
+                    li.style.listStyleType = 'none'
+                    li.style.width = '100%';
+                    li.style.textAlign = 'center';
+                    li.style.padding = '10px';
+                    li.style.flex = '0 0 calc(33.33% - 20px)'
+                    li.textContent = `${key}: ${JSON.stringify(value)}`;
+                    ul.appendChild(li);
+                }
+
+                div.appendChild(ul);
+
+                output.appendChild(div);
             }
-
-            div.appendChild(ul);
-
-            // Append the formatted information to the output element
-            output.appendChild(div);
-        }).catch(error => console.error('Error: ', error))
+        }).catch(error => console.error('Error: ', error));
 }
-
 
 function fetchSuperheroPower(){
     const text = document.getElementById('powersId').value
@@ -64,62 +79,151 @@ function fetchSuperheroPower(){
         }).catch(error =>console.error('Error',error))
 }
 
-function createList(){
-    let whiteBox = document.getElementById('whiteBox')
-    let container = document.getElementById('startContainer')
+async function createListBox() {
+    let whiteBox = document.getElementById('listContainer');
+    let paragraph = document.getElementById('startP');
+    let textbox = document.createElement('input');
+    textbox.style.alignContent = 'center';
+    textbox.style.display = 'flex';
+    paragraph.textContent = 'Enter a list name!'
+    textbox.style.justifyContent = 'center';
+    let container = document.getElementById('startContainer');
+    container.appendChild(textbox)
 
-    container.style.top = 10+'%'
-    let listDiv = document.createElement('div')
 
-    let paragraph = document.getElementById('startP')
-    paragraph.textContent = ''
+    textbox.addEventListener('keydown', async function (event) {
+        if (event.keyCode === 13) {
+            event.preventDefault();
 
+            let userInput = textbox.value;
 
-    let newDiv = document.createElement('div')
-        newDiv.style.background = '#d3d3d3';
-        newDiv.style.alignContent = 'center';
-        newDiv.style.width = (whiteBox.offsetWidth -25) + 'px'
-        newDiv.style.height = '10px';
-        newDiv.style.display = 'flex';
-        newDiv.style.justifyContent = 'center';
-        newDiv.setAttribute('id', 'list');
-        newDiv.style.color = '#4B4B4B';
+            const data = {
+                listName: `${userInput}`,
+                superheroes: []
+            }
 
-        whiteBox.appendChild(newDiv)
+            await fetch(`http://localhost:17532/api/lists/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
 
+            let button = document.createElement('button');
+            textbox.style.display = 'none'
+            button.style.background = '#8EE4AF';
+            button.style.alignContent = 'center';
+            button.style.width = (whiteBox.offsetWidth - 2) + 'px';
+            button.style.height = '25px';
+            button.style.top = '1px'
+            button.style.marginBottom = '1px';
+            button.style.display = 'flex';
+            button.style.border = '1px solid black';
+            button.style.justifyContent = 'center';
+            button.style.marginLeft = '1px';
+            button.setAttribute('id', 'listButton');
+            button.style.color = '#4B4B4B';
+            button.textContent = userInput;
+
+            button.addEventListener('mouseenter', function () {
+                button.style.backgroundColor = '#4CAF50';
+                button.style.color = 'white';
+            });
+
+            button.addEventListener('mouseleave', function () {
+                button.style.backgroundColor = '#8EE4AF';
+                button.style.color = '#4B4B4B';
+            });
+
+            whiteBox.appendChild(button);
+
+            let othContainer = document.getElementById('colouredBlock');
+
+            container.style.top = 4 + '%';
+
+            let listBox = document.createElement('div');
+            listBox.setAttribute('id', 'listBox');
+            listBox.style.marginTop = (-633) + 'px';
+            listBox.style.marginLeft = (othContainer.offsetLeft + 175) + 'px';
+            listBox.style.width = '86.25vw';
+            listBox.style.height = ' 92.75vh';
+            listBox.style.position = 'relative';
+            listBox.style.overflow = 'auto';
+            listBox.style.backgroundColor = 'white';
+            othContainer.appendChild(listBox);
+
+            paragraph.style.display = 'none';
+        }
+    });
 }
 
 function getPublisher(){
-    fetch('http://localhost:17532/api/superheroes').then(response=>{
-        if(!response.ok)
-            throw new Error(`HTTP error! status: ${response.status}`)
-
-        return response.json()
-    }).then(data => {
-        const superheroes = data.superheroes;
-
-            let publishers = new Set()
+    fetch('http://localhost:17532/api/superheroes')
+        .then(response => {
+            if(!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            const superheroes = data.superheroes;
+            let publishers = new Set();
 
             for (const superhero of superheroes) {
                 const publisher = superhero.Publisher;
                 if (publisher) {
                     publishers.add(publisher);
-
                 }
             }
-            let select = document.getElementById('publisherBox')
-            for (let i of publishers.values()){
+
+            let select = document.getElementById('publisherSelection');
+
+
+            for (let i of publishers) {
                 let option = document.createElement("option");
-                option.text = i
-                select.add(option)
+                option.text = i;
+                console.log(i)
+                select.add(option);
+            }
+        })
+        .catch(error => console.error('Error: ', error));
+}
+getPublisher()
+
+function getRace(){
+    fetch('http://localhost:17532/api/superheroes')
+        .then(response => {
+            if(!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            const superheroes = data.superheroes;
+            let races = new Set();
+
+            for (const superhero of superheroes) {
+                const race = superhero.Race;
+                if (race) {
+                    races.add(race);
+                }
             }
 
-    }).catch(error => console.error('Error: ', error));
-}
+            let select = document.getElementById('raceSelection');
 
-window.onload = function (){
-    getPublisher()
+            for (let i of races) {
+                let option = document.createElement("option");
+                option.text = i;
+                select.add(option);
+            }
+        })
+        .catch(error => console.error('Error: ', error));
 }
+getRace()
+
+
+
 
 
 
