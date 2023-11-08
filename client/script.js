@@ -1,9 +1,9 @@
 function fetchSuperheroInfo() {
-
     const text = document.getElementById('superheroId').value;
     const output = document.getElementById('listBox');
 
-    output.innerHTML = ''
+    output.innerHTML = '';
+
     if (text === '') {
         output.textContent = '';
         return;
@@ -11,51 +11,52 @@ function fetchSuperheroInfo() {
 
     fetch(`http://localhost:17532/api/superheroes/name/${text}`).then(response => {
         if (!response.ok) {
-            let container = document.getElementById('startContainer');
             let paragraph = document.getElementById('startP');
-            paragraph.style.display = 'block'
-            paragraph.textContent = 'No Results Found!'
-            paragraph.style.color = 'black'
+            paragraph.style.display = 'block';
+            paragraph.textContent = 'No Results Found!';
+            paragraph.style.color = 'black';
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         return response.json();
-    })
-        .then(superheroes => {
-            let paragraph = document.getElementById('startP');
-            paragraph.style.display = 'none'
-            for (const superhero of superheroes) {
-                let div = document.createElement('div');
-                div.style.background = '#3500D3';
-                div.style.width = '500px'
-                div.style.alignContent = 'center';
-                div.style.marginBottom = '10px';
-                div.style.display = 'flex';
-                div.style.justifyContent = 'center';
-                div.setAttribute('class', 'superheroDiv');
-                div.style.color = 'WHITE';
+    }).then(superheroes => {
+        let paragraph = document.getElementById('startP');
+        paragraph.style.display = 'none';
 
-                let ul = document.createElement('ul');
-                ul.style.listStyleType = 'none';
-                ul.style.padding = '0';
-                ul.style.display = 'flex';
-                ul.style.flexWrap = 'wrap';
+        for (const superhero of superheroes) {
+            let div = document.createElement('div');
+            div.style.background = '#3500D3';
+            div.style.width = '500px';
+            div.style.alignContent = 'center';
+            div.style.marginBottom = '10px';
+            div.style.display = 'flex';
+            div.style.justifyContent = 'center';
+            div.setAttribute('class', 'superheroDiv');
+            div.style.color = 'WHITE';
 
-                for (const [key, value] of Object.entries(superhero)) {
+            let ul = document.createElement('ul');
+            ul.style.listStyleType = 'none';
+            ul.style.padding = '0';
+            ul.style.display = 'flex';
+            ul.style.flexWrap = 'wrap';
+
+            for (const [key, value] of Object.entries(superhero)) {
+                if (key !== '_id') { // Exclude the "_id" field
                     let li = document.createElement('li');
-                    li.style.listStyleType = 'none'
+                    li.style.listStyleType = 'none';
                     li.style.width = '100%';
                     li.style.textAlign = 'center';
                     li.style.padding = '10px';
-                    li.style.flex = '0 0 calc(33.33% - 20px)'
+                    li.style.flex = '0 0 calc(33.33% - 20px)';
                     li.textContent = `${key}: ${JSON.stringify(value)}`;
                     ul.appendChild(li);
                 }
-
-                div.appendChild(ul);
-
-                output.appendChild(div);
             }
-        }).catch(error => console.error('Error: ', error));
+
+            div.appendChild(ul);
+
+            output.appendChild(div);
+        }
+    }).catch(error => console.error('Error: ', error));
 }
 
 function fetchSuperheroPower(){
@@ -139,12 +140,12 @@ async function createListBox() {
             whiteBox.appendChild(button);
 
             let othContainer = document.getElementById('colouredBlock');
+            let header = document.getElementById('labHeader')
 
-            container.style.top = 4 + '%';
-
+            header.style.marginTop = '-305px'
             let listBox = document.createElement('div');
             listBox.setAttribute('id', 'listBox');
-            listBox.style.marginTop = (-633) + 'px';
+            listBox.style.marginTop = (-635) + 'px';
             listBox.style.marginLeft = (othContainer.offsetLeft + 175) + 'px';
             listBox.style.width = '86.25vw';
             listBox.style.height = ' 92.75vh';
@@ -222,7 +223,53 @@ function getRace(){
 }
 getRace()
 
+function fetchLists(){
 
+    fetch('http://localhost:17532/api/lists').then(
+        response =>{
+            if(!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        }
+    ).then(
+        data =>{
+            for (const listItem of data) {
+                let whiteBox = document.getElementById('listContainer');
+                const listName = listItem.listName;
+                let button = document.createElement('button');
+                // textbox.style.display = 'none'
+                button.style.background = '#8EE4AF';
+                button.style.alignContent = 'center';
+                button.style.width = (whiteBox.offsetWidth - 2) + 'px';
+                button.style.height = '25px';
+                button.style.top = '1px'
+                button.style.marginBottom = '1px';
+                button.style.display = 'flex';
+                button.style.border = '1px solid black';
+                button.style.justifyContent = 'center';
+                button.style.marginLeft = '1px';
+                button.setAttribute('id', 'listButton');
+                button.style.color = '#4B4B4B';
+                button.textContent = listName;
+
+                button.addEventListener('mouseenter', function () {
+                    button.style.backgroundColor = '#4CAF50';
+                    button.style.color = 'white';
+                });
+
+                button.addEventListener('mouseleave', function () {
+                    button.style.backgroundColor = '#8EE4AF';
+                    button.style.color = '#4B4B4B';
+                });
+
+                whiteBox.appendChild(button);
+            }
+        }
+    )
+}
+
+fetchLists()
 
 
 

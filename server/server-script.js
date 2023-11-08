@@ -1,86 +1,105 @@
 const express = require('express');
-const fs = require('fs')
+const fs= require('fs')
 const cors = require('cors')
-const app = express();
 const path = require('path');
+const {connectToDb, getDb} = require('./db')
 
+let db;
+const port = process.env.ACSvcPort || 3000
+
+connectToDb((err)=>{
+    if(!err){
+        app.listen(port,()=>console.log(`Listening on port ${port}...`))
+        db = getDb()
+    }
+})
+const app = express();
 app.use(cors())
 app.use(express.static(path.join(__dirname, 'client')));
 app.use(express.json())
 
-let s_info_data;
-let s_powers_data;
+app.get('/api/superheroes', async (req, res) => {
+    try {
+        const infoCursor = db.collection('info').find();
+        const powersCursor = db.collection('powers').find();
 
-let lists = []
-fs.readFile('superheroes/superhero_info.json','utf8',(err,data)=>{
-    if(err){
-        console.error('Error:',err)
-        return;
-    }
-    s_info_data = JSON.parse(data);
-})
+        const s_info_data = await infoCursor.toArray();
+        const s_powers_data = await powersCursor.toArray();
 
-fs.readFile('superheroes/superhero_powers.json','utf-8',(err,data)=>{
-    if(err){
-        console.error('Error:',err)
-        return;
-    }
-    s_powers_data = JSON.parse(data)
-})
+        const combinedData = {
+            superheroes: s_info_data,
+            powers: s_powers_data
+        };
 
-
-app.get('/',(req,res)=>{
-    res.send('Hello World')
-});
-
-app.get('/api/superheroes', (req, res) => {
-    const combinedData = {
-        superheroes: s_info_data,
-        powers: s_powers_data
-    };
-
-    res.json(combinedData);
-});
-
-app.get('/api/superheroes/id/:id',(req,res)=>{
-    const superhero = s_info_data.find(s => s.id === parseInt(req.params.id));
-    if(!superhero)
-        res.status(404).send('Id not found')
-    res.send(superhero)
-})
-
-app.get('/api/superheroes/name/:name',(req,res)=>{
-    const searchName = req.params.name;
-
-    const regex = new RegExp(`^${searchName}`, 'i');
-    const matchingSuperheroes = s_info_data.filter(s => s.name.match(regex));
-
-    if(matchingSuperheroes.length === 0) {
-        console.log('Superheroes not found');
-        res.status(404).send('Superheroes not found');
-    } else {
-        console.log('Sending matching superheroes');
-        res.send(matchingSuperheroes);
+        res.status(200).json(combinedData);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Could not fetch data' });
     }
 });
-app.get('/api/superheroes/hero_names/:hero_names',(req,res)=>{
-    const searchName = req.params.hero_names;
 
-    const regex = new RegExp(`^${searchName}`, 'i');
-    const matchingSuperheroes = s_powers_data.filter(s => s.hero_names.match(regex));
+app.get('/api/superheroes/id/:id', async (req, res) => {
+    try {
+        const superheroId = parseInt(req.params.id);
+        const superhero = await db.collection('info').findOne({ id: superheroId });
 
-    if(matchingSuperheroes.length === 0) {
-        console.log('Superheroes not found');
-        res.status(404).send('Superheroes not found');
-    } else {
-        console.log('Sending matching superheroes');
-        res.send(matchingSuperheroes);
+        if (!superhero) {
+            res.status(404).send('Superhero not found');
+            return;
+        }
+
+        res.status(200).json(superhero);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Could not fetch superhero data' });
     }
-})
+});
+
+app.get('/api/superheroes/name/:name', async (req, res) => {
+    try {
+        const searchName = req.params.name;
+        const regex = new RegExp(`^${searchName}`, 'i');
+
+        const infoCursor = db.collection('info').find({ name: regex });
+        const matchingSuperheroes = await infoCursor.toArray();
+
+        if (matchingSuperheroes.length === 0) {
+            console.log('Superheroes not found');
+            res.status(404).send('Superheroes not found');
+        } else {
+            console.log('Sending matching superheroes');
+            res.status(200).json(matchingSuperheroes);
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Could not fetch superhero data' });
+    }
+});
+
+app.get('/api/superheroes/hero_names/:hero_names', async (req, res) => {
+    try {
+        const searchName = req.params.hero_names;
+        const regex = new RegExp(`^${searchName}`, 'i');
+
+        const powersCursor = db.collection('powers').find({ hero_names: regex });
+        const matchingSuperheroes = await powersCursor.toArray();
+
+        if (matchingSuperheroes.length === 0) {
+            console.log('Superheroes not found');
+            res.status(404).send('Superheroes not found');
+        } else {
+            console.log('Sending matching superheroes');
+            res.status(200).json(matchingSuperheroes);
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Could not fetch superhero data' });
+    }
+});
+
 
 app.get('/api/superheroes/:id/powers', (req, res) => {
     const superheroId = parseInt(req.params.id);
-
 
     const superhero = s_info_data.find(superhero => superhero.id === superheroId);
 
@@ -114,5 +133,6 @@ const {listName, superheroes} = req.body
     res.send(list)
 })
 
-const port = process.env.ACSvcPort || 3000
-app.listen(port,()=>console.log(`Listening on port ${port}...`))
+app.get('/api/lists',(req,res)=>{
+    res.json(lists)
+})
