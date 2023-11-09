@@ -1,9 +1,16 @@
 function fetchSuperheroInfo() {
 
-    let name = document.getElementById('superheroId').value;
+    let nameField = document.getElementById('superheroId');
+    name = nameField.value
     let power = document.getElementById('powersSelection').value;
     let race = document.getElementById('raceSelection').value;
     let publisher = document.getElementById('publisherSelection').value;
+    let sanitizedInput = name.replace(/[^a-zA-Z]/g, '');
+
+
+    if (sanitizedInput !== name) {
+        nameField.value = sanitizedInput;
+    }
     let searchResultsContainer = document.getElementById('searchResultsContainer');
 
     searchResultsContainer.innerHTML = '';

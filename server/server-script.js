@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors')
 const path = require('path');
+const { body, query, param } = require('express-validator');
 const {connectToDb, getDb} = require('./db')
 
 let db;
@@ -19,7 +20,11 @@ app.use(express.json())
 
 
 
-app.get('/api/superheroes', async (req, res) => {
+app.get('/api/superheroes',
+    query('name').optional().escape(),
+    query('Race').optional().escape(),
+    query('Publisher').optional().escape(),
+    query('power').optional().escape(),async (req, res) => {
     try {
         let query = {};
 
@@ -95,7 +100,9 @@ app.get('/api/superheroes/single',async(req,res)=>{
     }
 })
 
-app.get('/api/superheroes/single/:searchBy/:value', async (req, res) => {
+app.get('/api/superheroes/single/:searchBy/:value',
+    param('searchBy').escape(),
+    param('value').escape(), async (req, res) => {
     try {
         const searchBy = req.params.searchBy;
         const value = req.params.value;
@@ -137,49 +144,8 @@ app.get('/api/superheroes/single/:searchBy/:value', async (req, res) => {
     }
 });
 
-app.get('/api/superheroes/:hero_names', async (req, res) => {
-    try {
-        const searchName = req.params.hero_names;
-        const regex = new RegExp(`^${searchName}`, 'i');
-
-        const powersCursor = db.collection('powers').find({ hero_names: regex });
-        const matchingSuperheroes = await powersCursor.toArray();
-
-        if (matchingSuperheroes.length === 0) {
-            console.log('Superheroes not found');
-            res.status(404).send('Superheroes not found');
-        } else {
-            console.log('Sending matching superheroes');
-            res.status(200).json(matchingSuperheroes);
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Could not fetch superhero data' });
-    }
-});
-
-
-app.get('/api/superheroes/:id/powers', (req, res) => {
-    const superheroId = parseInt(req.params.id);
-
-    const superhero = s_info_data.find(superhero => superhero.id === superheroId);
-
-    if (!superhero) {
-        res.status(404).json({ message: `Superhero with ID ${superheroId} not found` });
-        return;
-    }
-
-    const superheroPowers = s_powers_data.find(power => power.hero_names === superhero.name);
-
-    if (!superheroPowers) {
-        res.status(404).json({ message: `Powers not found for Superhero with ID ${superheroId}` });
-        return;
-    }
-
-    res.json(superheroPowers);
-});
-
-app.put('/api/lists/:listName', async (req, res) => {
+app.put('/api/lists/:listName', param('listName').escape(),
+    body('superhero').escape(),async (req, res) => {
     try {
         const listName = req.params.listName;
         const superhero = req.body.superhero;
@@ -203,7 +169,10 @@ app.put('/api/lists/:listName', async (req, res) => {
     }
 });
 
-app.post('/api/lists', async (req, res) => {
+app.post('/api/lists',
+    body('listName').escape(),
+    body('superheroes').isArray(),
+    body('superheroes.*').escape(), async (req, res) => {
     const { listName, superheroes } = req.body;
 
     try {
@@ -232,7 +201,7 @@ app.get('/api/lists', async (req, res) => {
     }
 });
 
-app.get('/api/lists/:listName', async (req,res) =>{
+app.get('/api/lists/:listName', param('listName').escape(),async (req,res) =>{
     try{
         const list = await db.collection('lists').find({listName: req.params.listName}).toArray()
         res.json(list)
@@ -242,7 +211,7 @@ app.get('/api/lists/:listName', async (req,res) =>{
     }
 })
 
-app.delete('/api/lists/:listName', async (req, res) => {
+app.delete('/api/lists/:listName' ,param('listName').escape(), async (req, res) => {
     try {
         const deletedList = await db.collection('lists').findOneAndDelete({ listName: req.params.listName });
         if (!deletedList.value) {
@@ -256,7 +225,7 @@ app.delete('/api/lists/:listName', async (req, res) => {
     }
 });
 
-app.get('/api/lists/sort/:listName', async (req, res) => {
+app.get('/api/lists/sort/:listName',  param('listName').escape(),async (req, res) => {
     try {
         const listName = req.params.listName;
         const list = await db.collection('lists').findOne({ listName });
