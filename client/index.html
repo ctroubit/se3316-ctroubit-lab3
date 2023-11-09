@@ -14,16 +14,26 @@
                 <h3>Search</h3>
                 <label for="superheroId">Enter Superhero:</label>
                 <input type="text" id="superheroId" oninput="fetchSuperheroInfo()" class = "textBox">
-                <label for="powersId">Enter Power:</label>
-                <input type = 'text' id="powersId" oninput="fetchSuperheroPower()" class = "textBox">
+
+                <label for="powersSelection">Powers</label>
+                <select id="powersSelection" class = 'selectionBox'>
+                    <option value="" selected disabled>Select an option</option>
+                </select>
 
                 <label for="publisherSelection">Publisher</label>
-                <select id="publisherSelection" class = 'selectionBox'></select>
+                <select id="publisherSelection" class = 'selectionBox' onchange="fetchSuperheroInfo()">
+                    <option value="" selected disabled>Select an option</option>
+                </select>
 
                 <label for="raceSelection">Race</label>
-                <select id="raceSelection" class = 'selectionBox' > </select>
+                <select id="raceSelection" class = 'selectionBox' onchange="fetchSuperheroInfo()">
+                    <option value="" selected disabled>Select an option</option>
+                </select>
+                <button id = 'resetButton' onclick = 'clearSearch();fetchSuperheroInfo()'>YUH</button>
+                <label for="listContainer">Lists</label>
                 <div id="listContainer"></div>
-                <button id = 'createButton' onclick="createListBox()" >Create List</button>
+                <button id = 'createButton' onclick="createListBox()" onchange="fetchSuperheroInfo()">Create List</button>
+
             </div>
         </div>
 </div>

@@ -94,11 +94,14 @@ body{
 }
 
 #listContainer{
-
     margin-top: 15px;
     width: 160px;
-    height: 45vh;
+    height: 40vh;
     background-color: white;
+}
+
+h3{
+    text-underline: #EDF5E1;
 }
 
 
