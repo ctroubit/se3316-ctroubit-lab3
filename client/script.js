@@ -128,6 +128,17 @@ function addListButton(listName) {
 
     button.textContent = listName;
     button.style.background = '#8EE4AF';
+    button.style.alignContent = 'center';
+    button.style.width = (whiteBox.offsetWidth - 2) + 'px';
+    button.style.height = '25px';
+    button.style.top = '1px'
+    button.style.marginBottom = '1px';
+    button.style.display = 'flex';
+    button.style.border = '1px solid black';
+    button.style.justifyContent = 'center';
+    button.style.marginLeft = '1px';
+    button.setAttribute('id', 'listButton');
+    button.style.color = '#4B4B4B';
 
     button.addEventListener('mouseenter', () => button.style.backgroundColor = '#4CAF50');
     button.addEventListener('mouseleave', () => button.style.backgroundColor = '#8EE4AF');
@@ -139,6 +150,8 @@ function addListButton(listName) {
 
 async function displayListElements(listName) {
     const response = await fetch(`http://localhost:17532/api/lists/${listName}`);
+    const listDisplayDiv = document.getElementById('listDisplayDiv');
+    listDisplayDiv.innerHTML = ''
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -148,19 +161,18 @@ async function displayListElements(listName) {
     const listObject = listData.find(list => list.listName === listName);
 
     if (listObject && Array.isArray(listObject.superheroes)) {
-        const listDisplayDiv = document.getElementById('listDisplayDiv');
         listDisplayDiv.innerHTML = '';
-
+        const selected = document.createElement('h3')
+        selected.textContent = selectedList
+        listDisplayDiv.appendChild(selected)
         listObject.superheroes.forEach(superhero => {
-            const selected = document.createElement('h3')
-            selected.textContent = selectedList
-            listDisplayDiv.appendChild(selected)
             const superheroElement = document.createElement('p');
             superheroElement.textContent = superhero.name;
             listDisplayDiv.appendChild(superheroElement);
         });
-    } else {
+    } else{
         console.error('Superheroes data is not found or not an array', listObject);
+
     }
 }
 function selectList(listName, buttonElement) {
@@ -274,7 +286,6 @@ function fetchLists() {
         const whiteBox = document.getElementById('listContainer');
         for (const listItem of data) {
             let button = document.createElement('button');
-            button.textContent = listItem.listName;
             button.style.background = '#8EE4AF';
             button.style.alignContent = 'center';
             button.style.width = (whiteBox.offsetWidth - 2) + 'px';
@@ -342,9 +353,12 @@ async function deleteList() {
         const response = await fetch(`http://localhost:17532/api/lists/${listName}`,
             {method: 'DELETE'});
 
+
         if (response.ok) {
             const data = await response.json();
             console.log(data.message);
+            alert("List deleted! Refreshing page...")
+            location.reload()
         } else {
             const errorData = await response.json();
             console.error(errorData.error);
@@ -352,9 +366,10 @@ async function deleteList() {
     } catch (error) {
         console.error('Error:', error);
     }
+
 }
 
-function addToMyList(superhero,listName) {
+function addToMyList(superhero, listName) {
     fetch(`http://localhost:17532/api/lists/${listName}`, {
         method: 'PUT',
         headers: {
@@ -368,7 +383,7 @@ function addToMyList(superhero,listName) {
         })
         .then(data => {
             console.log('Superhero added to list:', data);
-
+            displayListElements(listName);
         })
         .catch(error => console.error('Error', error));
 }
@@ -394,7 +409,20 @@ function fetchAndDisplayPowers(superhero, container) {
         .catch(error => console.error('Error', error));
 }
 
+async function sortList() {
+    try {
+        // Fetch the list elements
+        const response = await fetch(`http://localhost:17532/api/lists/sort/${selectedList}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const sortedList = await response.json();
 
+        displayListElements(sortedList);
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
 getPowers()
 
 fetchLists()

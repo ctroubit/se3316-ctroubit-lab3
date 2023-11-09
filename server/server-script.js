@@ -17,25 +17,7 @@ app.use(cors())
 app.use(express.static(path.join(__dirname, 'client')));
 app.use(express.json())
 
-// app.get('/api/superheroes', async (req, res) => {
-//     try {
-//         const infoCursor = db.collection('info').find();
-//         const powersCursor = db.collection('powers').find();
-//
-//         const s_info_data = await infoCursor.toArray();
-//         const s_powers_data = await powersCursor.toArray();
-//
-//         const combinedData = {
-//             superheroes: s_info_data,
-//             powers: s_powers_data
-//         };
-//
-//         res.status(200).json(combinedData);
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ error: 'Could not fetch data' });
-//     }
-// });
+
 
 app.get('/api/superheroes', async (req, res) => {
     try {
@@ -271,6 +253,32 @@ app.delete('/api/lists/:listName', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Could not delete list' });
+    }
+});
+
+app.get('/api/lists/sort/:listName', async (req, res) => {
+    try {
+        const listName = req.params.listName;
+        const list = await db.collection('lists').findOne({ listName });
+
+        if (list) {
+
+            list.superheroes.sort((a, b) => a.name.localeCompare(b.name));
+
+
+            await db.collection('lists').updateOne(
+                { listName },
+                { $set: { superheroes: list.superheroes } }
+            );
+
+            const list = await db.collection('lists').find({listName: req.params.listName}).toArray()
+            res.json(list)
+        } else {
+            res.status(404).json({ error: `List '${listName}' not found.` });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Could not fetch and update list' });
     }
 });
 

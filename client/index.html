@@ -31,7 +31,7 @@
             <select id="raceSelection" class = 'selectionBox' onchange="fetchSuperheroInfo()">
                 <option value="" selected disabled>Select an option</option>
             </select>
-            <button id = 'resetButton' onclick = 'clearSearch();fetchSuperheroInfo()'>YUH</button>
+            <button id = 'resetButton' onclick = 'clearSearch();fetchSuperheroInfo()'>Search</button>
 
 
         </div>
@@ -43,11 +43,12 @@
         </div>
         </div>
     <div id="listSection">
+        <div id="listDisplayDiv"> <p id = "selectedList"></p></div>
         <div id="listContainer">
-            <div id="listDisplayDiv"> </div>
             <label for="listContainer" id="listHeader">Lists</label>
             <button id = 'createButton' onclick="createListBox()" onchange="fetchSuperheroInfo()" class ="listButtons">Create</button>
             <button id = 'deleteButton ' onclick = "deleteList()" class = "listButtons">DELETE</button>
+            <button id="sortButton" onclick = "sortList()" class="listButtons">SORT</button>
         </div>
     </div>
 
