@@ -11,6 +11,7 @@ label{
     align-items: center;
     flex-direction: column;
     text-align: center;
+
 }
 
 #superheroId{
@@ -35,7 +36,7 @@ h1 {
 
 body{
     font-family: '8BIT WONDER', sans-serif;
-    background-color: #5CD895;
+    background-color:#0c0032;
     COLOR: #EDF5E1;
     margin: 0;
     padding: 0;
@@ -49,23 +50,12 @@ body{
     left: 0;
 }
 
-.centered-content {
-    position: absolute;
-    top: 24%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    text-align: center;
-}
-
 #createButton {
     font-family: '8BIT WONDER', sans-serif;
     font-size: 11px;
     margin-top: 15px;
-    right: 0;
+
+    right: 5px;
 
 }
 
@@ -94,15 +84,132 @@ body{
 }
 
 #listContainer{
-    margin-top: 15px;
+    flex: 1;
+    background-color:  #0c0032;
     width: 160px;
     height: 40vh;
-    background-color: white;
 }
 
 h3{
     text-underline: #EDF5E1;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+
 }
+
+#mainContainer {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    max-width: 100vw;
+}
+
+#listContainer, #listDisplayDiv {
+    flex: 1;
+    width: 160px;
+}
+
+#contentContainer {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    margin-right: 20px;
+    overflow: auto;
+}
+#listHeader{
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+}
+
+
+#searchResultsContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: auto;
+    width: 100%;
+    flex-grow: 1;
+    justify-content: center;
+    text-align: center;
+}
+
+.superheroDiv {
+    background: #3500D3;
+    width: 750px;
+    margin-bottom: 10px;
+    display: flex;
+    overflow: auto;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.superheroDiv ul {
+    list-style-type: none;
+    padding: 0;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.superheroDiv ul li {
+    list-style-type: none;
+    width: 100%;
+    text-align: center;
+    flex: 0 0 calc(50% - 20px);
+    margin: 10px;
+    background-color: #4831D4;
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.superheroDiv button {
+    background-color: #5CD895;
+    color: #0c0032;
+    border: none;
+    padding: 10px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.superheroDiv button:hover {
+    background-color: #43A047;
+}
+
+
+
+
+#listDisplayDiv{
+    width: 200px;
+    height: 400px;
+    right: 0;
+    margin-left: -40px;
+    background-color: white;
+    margin-top: 5px;
+    color: black;
+}
+
+
+
+
+
+
 
 
 

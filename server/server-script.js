@@ -197,19 +197,46 @@ app.get('/api/superheroes/:id/powers', (req, res) => {
     res.json(superheroPowers);
 });
 
-app.put('/api/lists/:listName',(req,res)=>{
-    const list = lists.find(l => l.listName === req.params.listName)
+app.put('/api/lists/:listName', async (req, res) => {
+    try {
+        const listName = req.params.listName;
+        const superhero = req.body.superhero;
 
-})
-app.post('/api/lists', (req, res) => {
+        const list = await db.collection('lists').findOne({ listName });
+
+        if (list) {
+            await db.collection('lists').updateOne(
+                { listName },
+                { $push: { superheroes: superhero } }
+            );
+
+            res.json({ message: `Superhero added to list '${listName}'` });
+        } else {
+            res.status(404).json({ error: `List '${listName}' not found.` });
+
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Could not add superhero to list' });
+    }
+});
+
+app.post('/api/lists', async (req, res) => {
     const { listName, superheroes } = req.body;
-    db.collection('lists').insertOne({ listName, superheroes })
-        .then(result => {
+
+    try {
+        const existingList = await db.collection('lists').findOne({ listName });
+
+        if (existingList) {
+            res.status(409).json({ error: 'A list with this name already exists.' });
+        } else {
+            const result = await db.collection('lists').insertOne({ listName, superheroes });
             res.status(201).json(result);
-        })
-        .catch(err => {
-            res.status(500).json(err);
-        });
+        }
+    } catch (err) {
+
+        res.status(500).json(err);
+    }
 });
 
 
@@ -232,35 +259,21 @@ app.get('/api/lists/:listName', async (req,res) =>{
         res.status(500).json({ error: 'Could not fetch lists' });
     }
 })
-app.get('/api/superheroes', async (req, res) => {
+
+app.delete('/api/lists/:listName', async (req, res) => {
     try {
-        const { name, power, race, publisher } = req.query;
-
-        // Build the query object based on the provided parameters
-        const query = {};
-
-        if (name) {
-            query.name = new RegExp(`^${name}`, 'i');
+        const deletedList = await db.collection('lists').findOneAndDelete({ listName: req.params.listName });
+        if (!deletedList.value) {
+            console.log(`List '${req.params.listName}' has been deleted.`);
+        } else {
+            console.log(`List '${req.params.listName}' not found.`);
         }
-
-        if (power) {
-            query.powers = { $elemMatch: { powerName: power } };
-        }
-
-        if (race) {
-            query.race = race;
-        }
-
-        if (publisher) {
-            query.publisher = publisher;
-        }
-
-        const superheroes = await db.collection('info').find(query).toArray();
-
-        res.status(200).json(superheroes);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Could not fetch data' });
+        res.status(500).json({ error: 'Could not delete list' });
     }
 });
+
+
+
 

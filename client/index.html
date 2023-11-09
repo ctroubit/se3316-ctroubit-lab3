@@ -7,52 +7,52 @@
 <link href="https://fonts.cdnfonts.com/css/8bit-wonder" rel="stylesheet">
 <script src="script.js"></script>
 <body>
+<div id="mainContainer">
+    <div id="headerDiv">
 
-<div id="headerDiv">
-        <div id = "colouredBlock">
-            <div class = "container">
-                <h3>Search</h3>
-                <label for="superheroId">Enter Superhero:</label>
-                <input type="text" id="superheroId" oninput="fetchSuperheroInfo()" class = "textBox">
+    </div>
+    <div id="contentContainer">
+        <div id="container">
+            <h3>Search</h3>
+            <label for="superheroId">Enter Superhero:</label>
+            <input type="text" id="superheroId" oninput="fetchSuperheroInfo()" class = "textBox">
 
-                <label for="powersSelection">Powers</label>
-                <select id="powersSelection" class = 'selectionBox'>
-                    <option value="" selected disabled>Select an option</option>
-                </select>
+            <label for="powersSelection">Powers</label>
+            <select id="powersSelection" class = 'selectionBox'>
+                <option value="" selected disabled>Select an option</option>
+            </select>
 
-                <label for="publisherSelection">Publisher</label>
-                <select id="publisherSelection" class = 'selectionBox' onchange="fetchSuperheroInfo()">
-                    <option value="" selected disabled>Select an option</option>
-                </select>
+            <label for="publisherSelection">Publisher</label>
+            <select id="publisherSelection" class = 'selectionBox' onchange="fetchSuperheroInfo()">
+                <option value="" selected disabled>Select an option</option>
+            </select>
 
-                <label for="raceSelection">Race</label>
-                <select id="raceSelection" class = 'selectionBox' onchange="fetchSuperheroInfo()">
-                    <option value="" selected disabled>Select an option</option>
-                </select>
-                <button id = 'resetButton' onclick = 'clearSearch();fetchSuperheroInfo()'>YUH</button>
-                <label for="listContainer">Lists</label>
-                <div id="listContainer"></div>
-                <button id = 'createButton' onclick="createListBox()" onchange="fetchSuperheroInfo()">Create List</button>
+            <label for="raceSelection">Race</label>
+            <select id="raceSelection" class = 'selectionBox' onchange="fetchSuperheroInfo()">
+                <option value="" selected disabled>Select an option</option>
+            </select>
+            <button id = 'resetButton' onclick = 'clearSearch();fetchSuperheroInfo()'>YUH</button>
 
-            </div>
+
         </div>
-</div>
-
-<div class="">
-
-    <div class = 'centered-content' id = 'startContainer'>
-
-        <h1 id = 'labHeader'>Lab 3</h1>
-        <p id = 'startP'>Create a list to get started !<br>
-            Or: <br>
-            Select an existing list!
-        </p>
+        <div id="searchResultsContainer">
+            <p id = 'startP'>Create a list to get started !<br>
+                Or: <br>
+                Select an existing list!
+            </p>
+        </div>
+        </div>
+    <div id="listSection">
+        <div id="listContainer">
+            <div id="listDisplayDiv"> </div>
+            <label for="listContainer" id="listHeader">Lists</label>
+            <button id = 'createButton' onclick="createListBox()" onchange="fetchSuperheroInfo()" class ="listButtons">Create</button>
+            <button id = 'deleteButton ' onclick = "deleteList()" class = "listButtons">DELETE</button>
+        </div>
     </div>
 
-    <div id="output"></div>
-    <div id="powerOutput"></div>
-
 </div>
+
 
 </body>
 </html>
