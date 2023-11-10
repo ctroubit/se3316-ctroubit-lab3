@@ -18,91 +18,95 @@ app.use(cors())
 app.use(express.static(path.join(__dirname, 'client')));
 app.use(express.json())
 
-
-
 app.get('/api/superheroes',
     query('name').optional().escape(),
     query('Race').optional().escape(),
     query('Publisher').optional().escape(),
-    query('power').optional().escape(),async (req, res) => {
-    try {
-        let query = {};
+    query('power').optional().escape(),
+    query('limit').optional().isInt({ min: 1 }), // Adding limit as an optional integer parameter
+    async (req, res) => {
+        try {
+            let query = {};
 
-        if (req.query.name) {
-            query.name = { $regex: new RegExp(`^${req.query.name}`, 'i') };
-        }
-
-        if (req.query.Race) {
-            query.Race = req.query.Race;
-        }
-
-        if (req.query.Publisher) {
-            query.Publisher = req.query.Publisher;
-        }
-
-        console.log('Initial query:', query);
-
-        const matchingSuperheroes = await db.collection('info').find(query).toArray();
-
-        if (req.query.power) {
-            if (matchingSuperheroes.length === 0) {
-                console.log('No matching superheroes found');
-                res.status(404).send('No matching superheroes found');
-                return;
+            if (req.query.name) {
+                query.name = { $regex: new RegExp(`^${req.query.name}`, 'i') };
             }
 
-            const heroNames = matchingSuperheroes.map(hero => hero.name);
-
-            const powers = await db.collection('powers').find({ hero_names: { $in: heroNames } }).toArray();
-
-            const superheroesWithPowers = matchingSuperheroes.filter(hero => {
-                const heroPowers = powers.find(power => power.hero_names.includes(hero.name));
-                const powerBeingLookedFor = req.query.power;
-
-                return heroPowers && heroPowers[powerBeingLookedFor] === 'True';
-            });
-
-            if (superheroesWithPowers.length === 0) {
-                console.log(`No matching superheroes found for power: ${req.query.power}`);
-                res.status(404).send(`No matching superheroes found for power: ${req.query.power}`);
-                return;
+            if (req.query.Race) {
+                query.Race = req.query.Race;
             }
 
-            console.log('Sending matching superheroes with powers');
-            res.status(200).json(superheroesWithPowers);
-        } else {
-            console.log('Sending matching superheroes');
-            res.status(200).json(matchingSuperheroes);
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Could not fetch superhero data', message: error.message });
-    }
-});
+            if (req.query.Publisher) {
+                query.Publisher = req.query.Publisher;
+            }
 
-app.get('/api/superheroes/single',async(req,res)=>{
+            let limit = req.query.limit ? parseInt(req.query.limit) : 0; // 0 means no limit
+
+            console.log('Initial query:', query);
+
+            const matchingSuperheroes = await db.collection('info').find(query).limit(limit).toArray();
+
+            if (req.query.power) {
+                if (matchingSuperheroes.length === 0) {
+                    console.log('No matching superheroes found');
+                    res.status(404).send('No matching superheroes found');
+                    return;
+                }
+
+                const heroNames = matchingSuperheroes.map(hero => hero.name);
+
+                const powers = await db.collection('powers').find({ hero_names: { $in: heroNames } }).toArray();
+
+                const superheroesWithPowers = matchingSuperheroes.filter(hero => {
+                    const heroPowers = powers.find(power => power.hero_names.includes(hero.name));
+                    const powerBeingLookedFor = req.query.power;
+
+                    return heroPowers && heroPowers[powerBeingLookedFor] === 'True';
+                });
+
+                if (superheroesWithPowers.length === 0) {
+                    console.log(`No matching superheroes found for power: ${req.query.power}`);
+                    res.status(404).send(`No matching superheroes found for power: ${req.query.power}`);
+                    return;
+                }
+
+                console.log('Sending matching superheroes with powers');
+                res.status(200).json(superheroesWithPowers);
+            } else {
+                console.log('Sending matching superheroes');
+                res.status(200).json(matchingSuperheroes);
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Could not fetch superhero data', message: error.message });
+        }
+    });
+
+app.get('/api/superheroes/info',async(req,res)=>{
     try {
         const infoCursor = db.collection('info').find();
-        const powersCursor = db.collection('powers').find();
 
         const s_info_data = await infoCursor.toArray();
-        const s_powers_data = await powersCursor.toArray();
 
-        const combinedData = {
-            superheroes: s_info_data,
-            powers: s_powers_data
-        };
-
-        res.status(200).json(combinedData);
+        res.status(200).json(s_info_data);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Could not fetch data' });
     }
 })
 
-app.get('/api/superheroes/single/:searchBy/:value',
-    param('searchBy').escape(),
-    param('value').escape(), async (req, res) => {
+app.get('/api/superheroes/powers',async(req,res)=>{
+    const name = "A-Bomb"
+    try{
+        const powerCursor = await db.collection('powers').findOne({hero_names: name})
+        res.status(200).json(powerCursor);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Could not fetch data' });
+    }
+})
+
+app.get('/api/superheroes/single/:searchBy/:value', async (req, res) => {
     try {
         const searchBy = req.params.searchBy;
         const value = req.params.value;
@@ -130,22 +134,32 @@ app.get('/api/superheroes/single/:searchBy/:value',
         }
 
         const matchingSuperheroes = await db.collection('info').find(query).toArray();
-
         if (matchingSuperheroes.length === 0) {
             console.log(`No superheroes found for ${searchBy}: ${value}`);
             res.status(404).send(`No superheroes found for ${searchBy}: ${value}`);
-        } else {
-            console.log(`Sending matching superheroes for ${searchBy}: ${value}`);
-            res.status(200).json(matchingSuperheroes);
+            return;
         }
+
+        const heroNames = matchingSuperheroes.map(hero => hero.name);
+        const powers = await db.collection('powers').find({ hero_names: { $in: heroNames } }).toArray();
+
+        const combinedData = matchingSuperheroes.map(hero => {
+            const heroPowers = powers.find(power => power.hero_names === hero.name);
+            return {
+                ...hero,
+                powers: heroPowers ? heroPowers : {}
+            };
+        });
+
+        res.status(200).json(combinedData);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Could not fetch superhero data' });
     }
 });
 
-app.put('/api/lists/:listName', param('listName').escape(),
-    body('superhero').escape(),async (req, res) => {
+
+app.put('/api/lists/:listName',async (req, res) => {
     try {
         const listName = req.params.listName;
         const superhero = req.body.superhero;

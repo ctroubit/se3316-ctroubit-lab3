@@ -1,109 +1,108 @@
-function fetchSuperheroInfo() {
 
-    let nameField = document.getElementById('superheroId');
-    name = nameField.value
-    let power = document.getElementById('powersSelection').value;
-    let race = document.getElementById('raceSelection').value;
-    let publisher = document.getElementById('publisherSelection').value;
-    let sanitizedInput = name.replace(/[^a-zA-Z]/g, '');
+async function fetchSuperheroInfo() {
+    const nameField = document.getElementById('superheroId');
+    const name = nameField.value.replace(/[^a-zA-Z]/g, '');
+    const power = document.getElementById('powersSelection').value;
+    const race = document.getElementById('raceSelection').value;
+    const publisher = document.getElementById('publisherSelection').value;
+    const searchNumber = document.getElementById('searchNumber').value
 
+    nameField.value = name;
 
-    if (sanitizedInput !== name) {
-        nameField.value = sanitizedInput;
-    }
-    let searchResultsContainer = document.getElementById('searchResultsContainer');
-
+    const searchResultsContainer = document.getElementById('searchResultsContainer');
     searchResultsContainer.innerHTML = '';
-    console.log(name,power,race,publisher)
 
-    let url = `http://localhost:17532/api/superheroes?${name ? 'name=' + name : ''}${power ? '&power=' + power : ''}${race ? '&Race=' + race : ''}${publisher ? '&Publisher=' + publisher : ''}`;
+    let url = `http://localhost:17532/api/superheroes?${name ? 'name=' + name : ''}${power ? '&power=' + 
+        power : ''}${race ? '&Race=' + race : ''}${publisher ? '&Publisher=' + publisher : ''}${searchNumber ? '&limit=' 
+        + searchNumber : ''}`;
+    url = url.endsWith('&') ? url.slice(0, -1) : url;
 
-    if (url.endsWith('&')) {
-        url = url.slice(0, -1);
-    }
-
-    fetch(url).then(response => {
+    try {
+        const response = await fetch(url);
         if (!response.ok) {
-            let paragraph = document.getElementById('startP');
-
-            paragraph.textContent = 'No Results Found!';
-            paragraph.style.color = 'black';
+            document.getElementById('startP').textContent = 'No Results Found!';
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        return response.json();
-    }).then(superhero => {
-          // Skip the _id field
-        console.log(superhero)
-        let paragraph = document.getElementById('startP');
 
-        let div = document.createElement('div');
-        div.style.background = '#3500D3';
-        div.style.width = '750px';
-        div.style.alignItems = 'center';
-        div.style.overflow = 'auto'
-        div.style.alignContent = 'center';
-        div.style.marginBottom = '10px';
-        div.style.display = 'flex';
-        div.style.justifyContent = 'center';
-        div.setAttribute('class', 'superheroDiv');
-        div.style.color = 'WHITE';
+        const superheroes = await response.json();
+        console.log(superheroes)
 
-        let ul = document.createElement('ul');
-        ul.style.listStyleType = 'none';
-        ul.style.padding = '0';
-        ul.style.display = 'flex';
-        ul.style.flexWrap = 'wrap';
-        superhero.forEach(superhero => {
-            const li = document.createElement('li');
-            li.style.listStyleType = 'none';
-            li.style.width = '100%';
-            li.style.textAlign = 'center';
-            li.style.flex = '0 0 calc(100% - 20px)';
-            li.style.padding = '10px';
-            li.style.display = 'flex';
-            li.style.flexDirection = 'column';
+        const powersPromises = superheroes.map(hero => fetchAndDisplayPowers(hero.name));
+        console.log(powersPromises)
+        const allPowers = await Promise.all(powersPromises);
 
-            for (const [key, value] of Object.entries(superhero)) {
-                if (key !== '_id') {
-                    let attributeDiv = document.createElement('div');
-                    attributeDiv.style.maxWidth = '100%';
-                    attributeDiv.style.overflowWrap = 'break-word';
-                    attributeDiv.textContent = `${key}: ${value}`;
-                    li.appendChild(attributeDiv);
-                }
-            }
-
-            let showPowersButton = document.createElement('button');
-            showPowersButton.textContent = 'Show Powers';
-            showPowersButton.style.width = '20%';
-            showPowersButton.style.display = 'flex';
-            showPowersButton.style.textAlign = 'center';
-            showPowersButton.addEventListener('click', function () {
-                fetchAndDisplayPowers(superhero, div);
-            });
-            li.appendChild(showPowersButton);
-
-            let addButton = document.createElement('button');
-            addButton.textContent = 'Add to List';
-            addButton.style.width = '20%';
-            addButton.style.display = 'inline-block'
-            addButton.style.textAlign = 'center'
-            addButton.addEventListener('click', function () {
-                console.log(superhero)
-                addToMyList(superhero,selectedList);
-            });
-            li.appendChild(addButton);
-
-            ul.appendChild(li);
-        });
-
-        div.appendChild(ul);
-
-        searchResultsContainer.innerHTML = '';
+        const div = createSuperheroesDiv(superheroes, allPowers);
         searchResultsContainer.appendChild(div);
-    }).catch(error => console.error('Error: ', error));
-
+    } catch (error) {
+        console.error('Error: ', error);
+    }
 }
+function createSuperheroesDiv(superheroes, allPowers) {
+    const div = document.createElement('div');
+    div.style.background = '#3500D3';
+    div.style.width = '750px';
+    div.style.alignItems = 'center';
+    div.style.overflow = 'auto'
+    div.style.alignContent = 'center';
+    div.style.marginBottom = '10px';
+    div.style.display = 'flex';
+    div.style.justifyContent = 'center';
+    div.setAttribute('class', 'superheroDiv');
+    div.style.color = 'WHITE';
+    const ul = document.createElement('ul');
+    ul.style.listStyleType = 'none';
+    ul.style.padding = '0';
+    ul.style.display = 'flex';
+    ul.style.flexWrap = 'wrap';
+
+    superheroes.forEach((superhero, index) => {
+        const li = createSuperheroListItem(superhero, allPowers[index]);
+        ul.appendChild(li);
+    });
+
+    div.appendChild(ul);
+    return div;
+}
+
+function createSuperheroListItem(superhero, powers) {
+    const li = document.createElement('li');
+   li.style.listStyleType = 'none';
+   li.style.width = '100%';
+   li.style.textAlign = 'center';
+   li.style.flex = '0 0 calc(100% - 20px)';
+   li.style.padding = '10px';
+   li.style.display = 'flex';
+   li.style.flexDirection = 'column';
+
+    Object.entries(superhero).forEach(([key, value]) => {
+        if (key !== '_id') {
+            const attributeDiv = document.createElement('div');
+            attributeDiv.style.maxWidth = '100%';
+            attributeDiv.style.overflowWrap = 'break-word';
+            attributeDiv.textContent = `${key}: ${value}`;
+            attributeDiv.textContent = `${key}: ${value}`;
+            li.appendChild(attributeDiv);
+        }
+    });
+
+    if (powers.length > 0) {
+        const powersDiv = document.createElement('div');
+        powersDiv.textContent = `Powers: ${powers.join(', ')}`;
+        li.appendChild(powersDiv);
+    }
+
+    const addButton = document.createElement('button');
+    addButton.textContent = 'Add to List';
+    addButton.style.width = '20%';
+    addButton.style.display = 'inline-block'
+    addButton.style.textAlign = 'center'
+    addButton.textContent = 'Add to List';
+    addButton.addEventListener('click', () => addToMyList(superhero, selectedList));
+    li.appendChild(addButton);
+
+    return li;
+}
+
 
 let selectedList;
 async function createNewList(userInput) {
@@ -191,7 +190,6 @@ function selectList(listName, buttonElement) {
 }
 
 async function createListBox() {
-    let whiteBox = document.getElementById('listContainer');
     let paragraph = document.getElementById('startP');
     let textbox = document.createElement('input');
     let container = document.getElementById('searchResultsContainer');
@@ -216,10 +214,8 @@ async function createListBox() {
     });
 }
 
-
-
 function getPublisher(){
-    fetch('http://localhost:17532/api/superheroes/single')
+    fetch('http://localhost:17532/api/superheroes/info')
         .then(response => {
             if(!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -227,10 +223,9 @@ function getPublisher(){
             return response.json();
         })
         .then(data => {
-            const superheroes = data.superheroes;
             let publishers = new Set();
 
-            for (const superhero of superheroes) {
+            for (const superhero of data) {
                 const publisher = superhero.Publisher;
                 if (publisher) {
                     publishers.add(publisher);
@@ -251,7 +246,7 @@ function getPublisher(){
 getPublisher()
 
 function getRace(){
-    fetch('http://localhost:17532/api/superheroes/single')
+    fetch('http://localhost:17532/api/superheroes/info/')
         .then(response => {
             if(!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -259,10 +254,9 @@ function getRace(){
             return response.json();
         })
         .then(data => {
-            const superheroes = data.superheroes;
             let races = new Set();
 
-            for (const superhero of superheroes) {
+            for (const superhero of data) {
                 const race = superhero.Race;
                 if (race) {
                     races.add(race);
@@ -279,6 +273,36 @@ function getRace(){
         })
         .catch(error => console.error('Error: ', error));
 }
+
+function fetchAndDisplayPowers(superheroName) {
+
+    return fetch(`http://localhost:17532/api/superheroes/single/${encodeURIComponent(superheroName)}`)
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            if (!data || !data.powers) {
+                console.log(`Superhero or powers for ${superheroName} not found.`);
+                return [];
+            }
+
+            let activePowers = [];
+            for (let power in data.powers) {
+
+                if (data.powers[power] === "True") {
+                    activePowers.push(power);
+                }
+            }
+
+            return activePowers;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            return [];
+        });
+}
+
 getRace()
 
 function fetchLists() {
@@ -316,19 +340,17 @@ function fetchLists() {
 }
 function getPowers() {
 
-    fetch(`http://localhost:17532/api/superheroes/single`,).then(response => {
+    fetch(`http://localhost:17532/api/superheroes/powers`,).then(response => {
         if (!response.ok)
             throw new Error(`HTTP error! status: ${response.status}`);
 
         return response.json();
     })
         .then(data => {
-
-            const powers = data.powers;
-            const fEntry = powers[0];
+            console.log(data)
             const allPowers = new Set();
 
-            const keys = Object.keys(fEntry);
+            const keys = Object.keys(data);
             keys.forEach(key => {
                 if (key !== 'hero_names' && key !== '_id') {
                     allPowers.add(key);
@@ -382,7 +404,7 @@ function addToMyList(superhero, listName) {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ superhero: superhero }),
+        body: JSON.stringify({ superhero: superhero}),
     })
         .then(response => {
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -394,31 +416,9 @@ function addToMyList(superhero, listName) {
         })
         .catch(error => console.error('Error', error));
 }
-function fetchAndDisplayPowers(superhero, container) {
-    fetch(`http://localhost:17532/api/superheroes/single?name=${superhero.name}`)
-        .then(response => {
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            return response.json();
-        })
-        .then(powersData => {
-            console.log(powersData)
-            let powersList = document.createElement('ul');
-            powersData.forEach(power => {
-                let powerItem = document.createElement('li');
-                powerItem.textContent = power;
-                powersList.appendChild(powerItem);
-            });
-
-
-            container.innerHTML = '';
-            container.appendChild(powersList);
-        })
-        .catch(error => console.error('Error', error));
-}
 
 async function sortList() {
     try {
-        // Fetch the list elements
         const response = await fetch(`http://localhost:17532/api/lists/sort/${selectedList}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);

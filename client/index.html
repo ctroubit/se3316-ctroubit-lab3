@@ -15,7 +15,7 @@
         <div id="container">
             <h3>Search</h3>
             <label for="superheroId">Enter Superhero:</label>
-            <input type="text" id="superheroId" oninput="fetchSuperheroInfo()" class = "textBox" maxlength="20">
+            <input type="text" id="superheroId"  class = "textBox" maxlength="20">
 
             <label for="powersSelection">Powers</label>
             <select id="powersSelection" class = 'selectionBox'>
@@ -23,15 +23,24 @@
             </select>
 
             <label for="publisherSelection">Publisher</label>
-            <select id="publisherSelection" class = 'selectionBox' onchange="fetchSuperheroInfo()">
+            <select id="publisherSelection" class = 'selectionBox' >
                 <option value="" selected disabled>Select an option</option>
             </select>
 
             <label for="raceSelection">Race</label>
-            <select id="raceSelection" class = 'selectionBox' onchange="fetchSuperheroInfo()">
+            <select id="raceSelection" class = 'selectionBox' >
                 <option value="" selected disabled>Select an option</option>
             </select>
-            <button id = 'resetButton' onclick = 'clearSearch();fetchSuperheroInfo()'>Search</button>
+            <select id="searchNumber">
+                <option value="">All</option>
+                <option >1</option>
+                <option >2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+            </select>
+            <button id = 'resetButton' onclick = 'clearSearch();fetchSuperheroInfo()'>Reset</button>
+            <button onclick="fetchSuperheroInfo()">Search</button>
 
 
         </div>
