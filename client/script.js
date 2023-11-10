@@ -20,7 +20,7 @@ async function fetchSuperheroInfo() {
     try {
         const response = await fetch(url);
         if (!response.ok) {
-            document.getElementById('startP').textContent = 'No Results Found!';
+            alert("No Results Found!")
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
@@ -182,31 +182,38 @@ async function displayListElements(listName) {
 
 async function fetchInfo(superhero) {
     try {
-        const response = await fetch(`http://localhost:17532/api/superheroes/single/${superhero}`);
+        const response = await fetch(`http://localhost:17532/api/superheroes/single/name/${superhero}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
+        console.log(data)
 
         let dataString = `Superhero Information:\n\n`;
 
-        for (const key in data) {
-            if (data.hasOwnProperty(key) && key !== 'powers' &&key!=='_id') {
-                dataString += `${key}: ${data[key]}\n`;
-            }
-        }
-
-        if (data.powers) {
-            let activePowers = [];
-            for (let power in data.powers) {
-                if (data.powers[power] === "True") {
-                    activePowers.push(power);
+        data.forEach((superheroObj, index) => {
+            for (const key in superheroObj) {
+                if (superheroObj.hasOwnProperty(key) && key !== 'powers' && key !== '_id') {
+                    dataString += `${key}: ${superheroObj[key]}\n`;
                 }
             }
-            if (activePowers.length > 0) {
-                dataString += `\nActive Powers:\n- ${activePowers.join('\n- ')}`;
+
+            if (superheroObj.powers) {
+                let activePowers = [];
+                for (let power in superheroObj.powers) {
+                    if (superheroObj.powers[power] === "True") {
+                        activePowers.push(power);
+                    }
+                }
+                if (activePowers.length > 0) {
+                    dataString += `\nActive Powers:\n- ${activePowers.join('\n- ')}\n`;
+                }
             }
-        }
+
+            if (index < data.length - 1) {
+                dataString += '\n---\n\n';
+            }
+        });
 
         alert(dataString);
     } catch (error) {
@@ -317,25 +324,28 @@ function getRace(){
 }
 
 function fetchAndDisplayPowers(superheroName) {
-
-    return fetch(`http://localhost:17532/api/superheroes/single/${encodeURIComponent(superheroName)}`)
+    return fetch(`http://localhost:17532/api/superheroes/single/name/${encodeURIComponent(superheroName)}`)
         .then(response => {
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             return response.json();
         })
         .then(data => {
-            if (!data || !data.powers) {
-                console.log(`Superhero or powers for ${superheroName} not found.`);
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                console.log(`Superhero ${superheroName} not found.`);
                 return [];
             }
 
             let activePowers = [];
-            for (let power in data.powers) {
 
-                if (data.powers[power] === "True") {
-                    activePowers.push(power);
+            data.forEach(superheroObj => {
+                if (superheroObj.powers) {
+                    for (let power in superheroObj.powers) {
+                        if (superheroObj.powers[power] === "True") {
+                            activePowers.push(power);
+                        }
+                    }
                 }
-            }
+            });
 
             return activePowers;
         })
@@ -344,6 +354,7 @@ function fetchAndDisplayPowers(superheroName) {
             return [];
         });
 }
+
 
 getRace()
 

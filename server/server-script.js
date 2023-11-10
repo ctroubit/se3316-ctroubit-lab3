@@ -19,11 +19,6 @@ app.use(express.static(path.join(__dirname, 'client')));
 app.use(express.json())
 
 app.get('/api/superheroes',
-    query('name').optional().escape(),
-    query('Race').optional().escape(),
-    query('Publisher').optional().escape(),
-    query('power').optional().escape(),
-    query('limit').optional().isInt({ min: 1 }), // Adding limit as an optional integer parameter
     async (req, res) => {
         try {
             let query = {};
@@ -40,7 +35,7 @@ app.get('/api/superheroes',
                 query.Publisher = req.query.Publisher;
             }
 
-            let limit = req.query.limit ? parseInt(req.query.limit) : 0; // 0 means no limit
+            let limit = req.query.limit ? parseInt(req.query.limit) : 0;
 
             console.log('Initial query:', query);
 
@@ -100,6 +95,25 @@ app.get('/api/superheroes/powers',async(req,res)=>{
     try{
         const powerCursor = await db.collection('powers').findOne({hero_names: name})
         res.status(200).json(powerCursor);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Could not fetch data' });
+    }
+})
+
+app.get('/api/superheroes/powers/:hero_names',async(req,res)=>{
+    try {
+        const infoCursor = db.collection('info').find();
+        const powersCursor = db.collection('powers').find();
+
+        const s_info_data = await infoCursor.toArray();
+        const s_powers_data = await powersCursor.toArray();
+
+        const combinedData = {
+            superheroes: s_info_data,
+            powers: s_powers_data
+        };
+        res.status(200).json(combinedData);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Could not fetch data' });
