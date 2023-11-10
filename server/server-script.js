@@ -239,31 +239,28 @@ app.delete('/api/lists/:listName' ,param('listName').escape(), async (req, res) 
     }
 });
 
-app.get('/api/lists/sort/:listName',  param('listName').escape(),async (req, res) => {
+app.put('/api/lists/sort/:listName', async (req, res) => {
     try {
         const listName = req.params.listName;
         const list = await db.collection('lists').findOne({ listName });
 
-        if (list) {
-
+        if (list && Array.isArray(list.superheroes)) {
             list.superheroes.sort((a, b) => a.name.localeCompare(b.name));
-
-
             await db.collection('lists').updateOne(
                 { listName },
                 { $set: { superheroes: list.superheroes } }
             );
 
-            const list = await db.collection('lists').find({listName: req.params.listName}).toArray()
-            res.json(list)
+            res.status(200).json(list.superheroes);
         } else {
-            res.status(404).json({ error: `List '${listName}' not found.` });
+            res.status(404).json({ error: `List '${listName}' not found or does not contain superheroes.` });
         }
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Could not fetch and update list' });
+        res.status(500).json({ error: 'Could not update list' });
     }
 });
+
 
 
 

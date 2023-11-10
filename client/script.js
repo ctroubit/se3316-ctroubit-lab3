@@ -1,7 +1,7 @@
 
 async function fetchSuperheroInfo() {
     const nameField = document.getElementById('superheroId');
-    const name = nameField.value.replace(/[^a-zA-Z]/g, '');
+    const name = nameField.value.replace(/[^a-zA-Z0-9-]/g, '');
     const power = document.getElementById('powersSelection').value;
     const race = document.getElementById('raceSelection').value;
     const publisher = document.getElementById('publisherSelection').value;
@@ -157,28 +157,60 @@ function addListButton(listName) {
 async function displayListElements(listName) {
     const response = await fetch(`http://localhost:17532/api/lists/${listName}`);
     const listDisplayDiv = document.getElementById('listDisplayDiv');
-    listDisplayDiv.innerHTML = ''
+    listDisplayDiv.innerHTML = '';
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
     }
     const listData = await response.json();
-
-
     const listObject = listData.find(list => list.listName === listName);
 
     if (listObject && Array.isArray(listObject.superheroes)) {
-        listDisplayDiv.innerHTML = '';
-        const selected = document.createElement('h3')
-        selected.textContent = selectedList
-        listDisplayDiv.appendChild(selected)
+        const selected = document.createElement('h3');
+        selected.textContent = listName;
+        listDisplayDiv.appendChild(selected);
         listObject.superheroes.forEach(superhero => {
             const superheroElement = document.createElement('p');
             superheroElement.textContent = superhero.name;
+            superheroElement.style.cursor = 'pointer';
+            superheroElement.addEventListener('click', () => fetchInfo(superhero.name));
             listDisplayDiv.appendChild(superheroElement);
         });
-    } else{
+    } else {
         console.error('Superheroes data is not found or not an array', listObject);
+    }
+}
 
+async function fetchInfo(superhero) {
+    try {
+        const response = await fetch(`http://localhost:17532/api/superheroes/single/${superhero}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+
+        let dataString = `Superhero Information:\n\n`;
+
+        for (const key in data) {
+            if (data.hasOwnProperty(key) && key !== 'powers' &&key!=='_id') {
+                dataString += `${key}: ${data[key]}\n`;
+            }
+        }
+
+        if (data.powers) {
+            let activePowers = [];
+            for (let power in data.powers) {
+                if (data.powers[power] === "True") {
+                    activePowers.push(power);
+                }
+            }
+            if (activePowers.length > 0) {
+                dataString += `\nActive Powers:\n- ${activePowers.join('\n- ')}`;
+            }
+        }
+
+        alert(dataString);
+    } catch (error) {
+        console.error('Error fetching superhero info:', error);
     }
 }
 function selectList(listName, buttonElement) {
@@ -192,14 +224,25 @@ function selectList(listName, buttonElement) {
 async function createListBox() {
     let paragraph = document.getElementById('startP');
     let textbox = document.createElement('input');
+    textbox.setAttribute('id','listName')
     let container = document.getElementById('searchResultsContainer');
     container.innerHTML = '';
+    let label = document.createElement('p')
+    label.setAttribute('for','listName')
+    label.style.marginBottom = '-50px'
+    label.textContent = 'ENTER A NAME FOR YOUR LIST:'
+    container.appendChild(label)
 
     textbox.type = 'text';
-    textbox.placeholder = 'Enter a list name';
+    textbox.style.marginTop = '100px'
+    paragraph.placeholder = 'Enter a list name';
 
     container.appendChild(textbox);
     textbox.focus();
+
+    textbox.addEventListener('input', function () {
+        textbox.value = textbox.value.replace(/[^a-zA-Z0-9-]/g, '');
+    });
 
     textbox.addEventListener('keydown', async function (event) {
         if (event.keyCode === 13) {
@@ -233,7 +276,6 @@ function getPublisher(){
             }
 
             let select = document.getElementById('publisherSelection');
-
 
             for (let i of publishers) {
                 let option = document.createElement("option");
@@ -313,6 +355,7 @@ function fetchLists() {
             }
             return response.json();
         }
+
     ).then(data => {
         const whiteBox = document.getElementById('listContainer');
         for (const listItem of data) {
@@ -382,7 +425,6 @@ async function deleteList() {
         const response = await fetch(`http://localhost:17532/api/lists/${listName}`,
             {method: 'DELETE'});
 
-
         if (response.ok) {
             const data = await response.json();
             console.log(data.message);
@@ -419,13 +461,16 @@ function addToMyList(superhero, listName) {
 
 async function sortList() {
     try {
-        const response = await fetch(`http://localhost:17532/api/lists/sort/${selectedList}`);
+        const response = await fetch(`http://localhost:17532/api/lists/sort/${selectedList}`, {
+            method: 'PUT'
+        });
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const sortedList = await response.json();
+        console.log(sortedList)
 
-        displayListElements(sortedList);
+        await displayListElements(selectedList);
     } catch (error) {
         console.error('Error:', error);
     }
