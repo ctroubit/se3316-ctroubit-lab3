@@ -6,13 +6,14 @@ async function fetchSuperheroInfo() {
     const race = document.getElementById('raceSelection').value;
     const publisher = document.getElementById('publisherSelection').value;
     const searchNumber = document.getElementById('searchNumber').value
+    console.log(searchNumber)
 
     nameField.value = name;
 
     const searchResultsContainer = document.getElementById('searchResultsContainer');
     searchResultsContainer.innerHTML = '';
 
-    let url = `http://localhost:17532/api/superheroes?${name ? 'name=' + name : ''}${power ? '&power=' + 
+    let url = `/api/superheroes?${name ? 'name=' + name : ''}${power ? '&power=' + 
         power : ''}${race ? '&Race=' + race : ''}${publisher ? '&Publisher=' + publisher : ''}${searchNumber ? '&limit=' 
         + searchNumber : ''}`;
     url = url.endsWith('&') ? url.slice(0, -1) : url;
@@ -111,7 +112,7 @@ async function createNewList(userInput) {
         superheroes: []
     };
 
-    await fetch(`http://localhost:17532/api/lists/`, {
+    await fetch(`/api/lists/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -155,7 +156,7 @@ function addListButton(listName) {
 
 
 async function displayListElements(listName) {
-    const response = await fetch(`http://localhost:17532/api/lists/${listName}`);
+    const response = await fetch(`/api/lists/${listName}`);
     const listDisplayDiv = document.getElementById('listDisplayDiv');
     listDisplayDiv.innerHTML = '';
     if (!response.ok) {
@@ -182,7 +183,7 @@ async function displayListElements(listName) {
 
 async function fetchInfo(superhero) {
     try {
-        const response = await fetch(`http://localhost:17532/api/superheroes/single/name/${superhero}`);
+        const response = await fetch(`/api/superheroes/single/name/${superhero}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -265,7 +266,7 @@ async function createListBox() {
 }
 
 function getPublisher(){
-    fetch('http://localhost:17532/api/superheroes/info')
+    fetch('/api/superheroes/info')
         .then(response => {
             if(!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -295,7 +296,7 @@ function getPublisher(){
 getPublisher()
 
 function getRace(){
-    fetch('http://localhost:17532/api/superheroes/info/')
+    fetch('/api/superheroes/info/')
         .then(response => {
             if(!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -324,7 +325,7 @@ function getRace(){
 }
 
 function fetchAndDisplayPowers(superheroName) {
-    return fetch(`http://localhost:17532/api/superheroes/single/name/${encodeURIComponent(superheroName)}`)
+    return fetch(`/api/superheroes/single/name/${encodeURIComponent(superheroName)}`)
         .then(response => {
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             return response.json();
@@ -359,7 +360,7 @@ function fetchAndDisplayPowers(superheroName) {
 getRace()
 
 function fetchLists() {
-    fetch('http://localhost:17532/api/lists').then(
+    fetch('/api/lists').then(
         response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -394,7 +395,7 @@ function fetchLists() {
 }
 function getPowers() {
 
-    fetch(`http://localhost:17532/api/superheroes/powers`,).then(response => {
+    fetch(`/api/superheroes/powers`,).then(response => {
         if (!response.ok)
             throw new Error(`HTTP error! status: ${response.status}`);
 
@@ -433,7 +434,7 @@ async function deleteList() {
     let listName = window.prompt('Enter the name of the list to delete:')
     console.log(listName)
     try {
-        const response = await fetch(`http://localhost:17532/api/lists/${listName}`,
+        const response = await fetch(`/api/lists/${listName}`,
             {method: 'DELETE'});
 
         if (response.ok) {
@@ -452,7 +453,7 @@ async function deleteList() {
 }
 
 function addToMyList(superhero, listName) {
-    fetch(`http://localhost:17532/api/lists/${listName}`, {
+    fetch(`/api/lists/${listName}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -472,7 +473,7 @@ function addToMyList(superhero, listName) {
 
 async function sortList() {
     try {
-        const response = await fetch(`http://localhost:17532/api/lists/sort/${selectedList}`, {
+        const response = await fetch(`/api/lists/sort/${selectedList}`, {
             method: 'PUT'
         });
         if (!response.ok) {

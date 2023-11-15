@@ -5,18 +5,17 @@ const { body, query, param } = require('express-validator');
 const {connectToDb, getDb} = require('./db')
 
 let db;
-const port = process.env.ACSvcPort || 3000
+const port = 3000
 
-connectToDb((err)=>{
-    if(!err){
-        app.listen(port,()=>console.log(`Listening on port ${port}...`))
-        db = getDb()
-    }
-})
+
 const app = express();
-app.use(cors())
-app.use(express.static(path.join(__dirname, 'client')));
+// app.use(cors())
+app.use(express.static(path.join(__dirname, '..', 'client')));
 app.use(express.json())
+
+app.get('/', (req,res) => {
+    res.sendFile(path.join(__dirname, "..", 'client', 'index.html'))
+})
 
 app.get('/api/superheroes',
     async (req, res) => {
@@ -39,7 +38,7 @@ app.get('/api/superheroes',
 
             console.log('Initial query:', query);
 
-            const matchingSuperheroes = await db.collection('info').find(query).limit(limit).toArray();
+            let matchingSuperheroes = await db.collection('info').find(query).toArray();
 
             if (req.query.power) {
                 if (matchingSuperheroes.length === 0) {
@@ -52,30 +51,32 @@ app.get('/api/superheroes',
 
                 const powers = await db.collection('powers').find({ hero_names: { $in: heroNames } }).toArray();
 
-                const superheroesWithPowers = matchingSuperheroes.filter(hero => {
+                matchingSuperheroes = matchingSuperheroes.filter(hero => {
                     const heroPowers = powers.find(power => power.hero_names.includes(hero.name));
                     const powerBeingLookedFor = req.query.power;
 
                     return heroPowers && heroPowers[powerBeingLookedFor] === 'True';
                 });
 
-                if (superheroesWithPowers.length === 0) {
+                if (matchingSuperheroes.length === 0) {
                     console.log(`No matching superheroes found for power: ${req.query.power}`);
                     res.status(404).send(`No matching superheroes found for power: ${req.query.power}`);
                     return;
                 }
-
-                console.log('Sending matching superheroes with powers');
-                res.status(200).json(superheroesWithPowers);
-            } else {
-                console.log('Sending matching superheroes');
-                res.status(200).json(matchingSuperheroes);
             }
+
+            if (limit > 0) {
+                matchingSuperheroes = matchingSuperheroes.slice(0, limit);
+            }
+
+            console.log('Sending matching superheroes');
+            res.status(200).json(matchingSuperheroes);
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Could not fetch superhero data', message: error.message });
         }
     });
+
 
 app.get('/api/superheroes/info',async(req,res)=>{
     try {
@@ -274,6 +275,13 @@ app.put('/api/lists/sort/:listName', async (req, res) => {
         res.status(500).json({ error: 'Could not update list' });
     }
 });
+
+connectToDb((err)=>{
+    if(!err){
+        app.listen(port,()=>console.log(`Listening on port ${port}...`))
+        db = getDb()
+    }
+})
 
 
 
