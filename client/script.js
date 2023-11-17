@@ -252,9 +252,6 @@ async function createListBox() {
     container.appendChild(textbox);
     textbox.focus();
 
-    textbox.addEventListener('input', function () {
-        textbox.value = textbox.value.replace(/[^a-zA-Z0-9-]/g, '');
-    });
 
     textbox.addEventListener('keydown', async function (event) {
         if (event.keyCode === 13) {
