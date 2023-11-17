@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors')
 const path = require('path');
 const { body, query, param } = require('express-validator');
+
 const {connectToDb, getDb} = require('./db')
 
 let db;
@@ -17,7 +18,11 @@ app.get('/', (req,res) => {
     res.sendFile(path.join(__dirname, "..", 'client', 'index.html'))
 })
 
-app.get('/api/superheroes',
+app.get('/api/superheroes',query('name').escape(),
+    query('Race').escape(),
+    query('Publisher').escape(),
+    query('limit').isInt().optional(),
+    query('power').escape(),
     async (req, res) => {
         try {
             let query = {};
@@ -102,7 +107,8 @@ app.get('/api/superheroes/powers',async(req,res)=>{
     }
 })
 
-app.get('/api/superheroes/powers/:hero_names',async(req,res)=>{
+app.get('/api/superheroes/powers/:hero_names',
+    param('hero_names').escape(),async(req,res)=>{
     try {
         const infoCursor = db.collection('info').find();
         const powersCursor = db.collection('powers').find();
@@ -121,7 +127,8 @@ app.get('/api/superheroes/powers/:hero_names',async(req,res)=>{
     }
 })
 
-app.get('/api/superheroes/single/:searchBy/:value', async (req, res) => {
+app.get('/api/superheroes/single/:searchBy/:value',
+    param('searchBy').escape(),param('value').escape(),async (req, res) => {
     try {
         const searchBy = req.params.searchBy;
         const value = req.params.value;
@@ -174,7 +181,8 @@ app.get('/api/superheroes/single/:searchBy/:value', async (req, res) => {
 });
 
 
-app.put('/api/lists/:listName',async (req, res) => {
+app.put('/api/lists/:listName'
+    ,param('listName').escape(),async (req, res) => {
     try {
         const listName = req.params.listName;
         const superhero = req.body.superhero;
@@ -201,7 +209,7 @@ app.put('/api/lists/:listName',async (req, res) => {
 app.post('/api/lists',
     body('listName').escape(),
     body('superheroes').isArray(),
-    body('superheroes.*').escape(), async (req, res) => {
+     async (req, res) => {
     const { listName, superheroes } = req.body;
 
     try {
@@ -223,6 +231,7 @@ app.post('/api/lists',
 app.get('/api/lists', async (req, res) => {
     try {
         const lists = await db.collection('lists').find({}).toArray();
+        console.log(lists.listName)
         res.json(lists);
     } catch (error) {
         console.error(error);
@@ -254,7 +263,7 @@ app.delete('/api/lists/:listName' ,param('listName').escape(), async (req, res) 
     }
 });
 
-app.put('/api/lists/sort/:listName', async (req, res) => {
+app.put('/api/lists/sort/:listName', param('listName').escape(),async (req, res) => {
     try {
         const listName = req.params.listName;
         const list = await db.collection('lists').findOne({ listName });

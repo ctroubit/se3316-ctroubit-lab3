@@ -1,7 +1,7 @@
 
 async function fetchSuperheroInfo() {
     const nameField = document.getElementById('superheroId');
-    const name = nameField.value.replace(/[^a-zA-Z0-9-]/g, '');
+
     const power = document.getElementById('powersSelection').value;
     const race = document.getElementById('raceSelection').value;
     const publisher = document.getElementById('publisherSelection').value;
@@ -156,7 +156,9 @@ function addListButton(listName) {
 
 
 async function displayListElements(listName) {
-    const response = await fetch(`/api/lists/${listName}`);
+    const response = await fetch(`/api/lists/${listName}`,{
+        METHOD: 'GET'
+    });
     const listDisplayDiv = document.getElementById('listDisplayDiv');
     listDisplayDiv.innerHTML = '';
     if (!response.ok) {
@@ -164,12 +166,14 @@ async function displayListElements(listName) {
     }
     const listData = await response.json();
     const listObject = listData.find(list => list.listName === listName);
+    const list = listObject.superheroes
 
     if (listObject && Array.isArray(listObject.superheroes)) {
         const selected = document.createElement('h3');
         selected.textContent = listName;
         listDisplayDiv.appendChild(selected);
-        listObject.superheroes.forEach(superhero => {
+        list.forEach(superhero => {
+            console.log(JSON.stringify(superhero))
             const superheroElement = document.createElement('p');
             superheroElement.textContent = superhero.name;
             superheroElement.style.cursor = 'pointer';
@@ -432,7 +436,6 @@ function clearSearch(){
 
 async function deleteList() {
     let listName = window.prompt('Enter the name of the list to delete:')
-    console.log(listName)
     try {
         const response = await fetch(`/api/lists/${listName}`,
             {method: 'DELETE'});
